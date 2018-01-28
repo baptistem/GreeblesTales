@@ -1,5 +1,5 @@
 
-#greebles tales#
+# greebles tales #
 
 This is a remake of an old school game for Mac os 9.
 Since this game is somehow difficult to play on modern computer,
