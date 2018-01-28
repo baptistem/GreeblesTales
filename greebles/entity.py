@@ -38,7 +38,7 @@ class Entity(pygame.sprite.Sprite):
         self.old_angle = angle
         self.image = pygame.transform.rotate(self.image, angle)
 
-    def set_speed(self, x_speed=0, y_speed=0):
+    def set_speed(self, x_speed=None, y_speed=None):
         if x_speed is None:
             x_speed = self.x_speed
         if y_speed is None:
@@ -65,3 +65,21 @@ class Entity(pygame.sprite.Sprite):
     def align(self):
         self.rect.x = round((self.rect.x-self.x_speed)/32)*32
         self.rect.y = round((self.rect.y-self.y_speed)/32)*32
+
+    def get_move(angle, value):
+        x = y = 0
+        direction = int(angle / 90)
+        if direction is 0:
+            y -= value
+        elif direction is 1:
+            x -= value
+        elif direction is 2:
+            y += value
+        elif direction is 3:
+            x += value
+        return x, y
+
+    def apply_move(self, angle, value):
+        x, y = Entity.get_move(angle, value)
+        self.rect.x += x
+        self.rect.y += y

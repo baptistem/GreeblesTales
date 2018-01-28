@@ -1,4 +1,4 @@
- #!/usr/bin/env python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import pygame as pg
@@ -6,30 +6,12 @@ from greebles.tank import Tank
 from greebles import level
 from greebles.block import Block
 from greebles.settings import Settings
+from greebles.entity import Entity
 from random import randrange
 BLANC = (255, 255, 255)
 NOIR = (0, 0, 0)
 
 settings = Settings(0)
-
-def get_move(angle, value):
-    x = y = 0
-    direction = int(angle / 90)
-    if direction is 0:
-        y -= value
-    elif direction is 1:
-        x -= value
-    elif direction is 2:
-        y += value
-    elif direction is 3:
-        x += value
-    return x, y
-
-
-def apply_move(angle, entity, value):
-    x, y = get_move(angle, value)
-    entity.rect.x += x
-    entity.rect.y += y
 
 
 pg.init()
@@ -103,30 +85,31 @@ while not done:
                 tank.rotate(180)
                 tank.set_speed(y_speed=2)
             elif event.key == pg.K_SPACE:
-                #pushing the tank hitbox 5 pixel further for colision check
-                apply_move(tank.old_angle, tank, 5)
+                # pushing the tank hitbox 5 pixel further for colision check
+                tank.apply_move(tank.old_angle, 5)
                 hits = pg.sprite.spritecollide(tank, blocks, False)
                 if len(hits) > 0:
-                    #only take the closest
+                    # only take the closest
+                    # first compare the hitbox
                     hits[0].journey = 0
                     hits[0].align()
                     speed = hits[0].x_speed + hits[0].y_speed
                     hits[0].x_speed, hits[0].y_speed =\
-                        get_move(tank.old_angle, 4+speed)
-                apply_move(tank.old_angle, tank, -5)
+                        Entity.get_move(tank.old_angle, 4+speed)
+                tank.apply_move(tank.old_angle, -5)
         elif event.type == pg.KEYUP:
             if event.key == pg.K_LEFT or event.key == pg.K_RIGHT:
                 tank.set_speed(0, tank.y_speed)
             elif event.key == pg.K_UP or event.key == pg.K_DOWN:
                 tank.set_speed(tank.x_speed, 0)
 
-    if tank.y_speed is 1 and abs(tank.x_speed) is 0:
+    if tank.y_speed is 2 and abs(tank.x_speed) is 0:
         tank.rotate(180)
-    if tank.y_speed is -1 and abs(tank.x_speed) is 0:
+    if tank.y_speed is -2 and abs(tank.x_speed) is 0:
         tank.rotate(0)
-    if tank.x_speed is 1 and abs(tank.y_speed) is 0:
+    if tank.x_speed is 2 and abs(tank.y_speed) is 0:
         tank.rotate(270)
-    if tank.x_speed is -1 and abs(tank.y_speed) is 0:
+    if tank.x_speed is -2 and abs(tank.y_speed) is 0:
         tank.rotate(90)
 
     screen.fill(NOIR)
@@ -145,9 +128,20 @@ while not done:
                         block.set_speed(0, 0)
                         block.rotate(0)
                     else:
-                        #Player hit a block and shouldn't go inside!
-                        tank.rect.x -= tank.x_speed
-                        tank.rect.y -= tank.y_speed
+                        print("frame")
+                        for angle in range(0, 360, 90):
+                            tank.apply_move(angle, 2)
+                            angle_hits = pg.sprite.spritecollide(tank, pg.sprite.GroupSingle(hit), False,pg.sprite.collide_rect_ratio(0.9))
+                            if len(angle_hits) > 0:
+                                print(angle)
+                                if angle == 0 or angle == 180:
+                                    tank.rect.y -= tank.y_speed
+                                else:
+                                    tank.rect.x -= tank.x_speed
+                                tank.apply_move(angle, -2)
+                                break
+                            tank.apply_move(angle, -2)
+
                 else:
                     if block.journey is 1:
                         block.fade()
