@@ -7,12 +7,12 @@ Will handle movement, score, lifes and powerup
 """
 
 import pygame
-from entity import Entity
+from greebles.entity import Entity
 
 BLACK = (0, 0, 0, 0)
 
 
-class Ennemy(Entity):
+class Enemy(Entity):
     """
     This class represents a ennemy, a moving entity controlled by the user.
 
@@ -26,3 +26,4 @@ class Ennemy(Entity):
         """
         self.image.set_colorkey(BLACK)
         super().__init__()
+        self.old_angle = 0

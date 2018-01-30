@@ -7,6 +7,7 @@ from greebles import level
 from greebles.block import Block
 from greebles.settings import Settings
 from greebles.entity import Entity
+from greebles.fly import Fly
 from random import randrange
 BLANC = (255, 255, 255)
 NOIR = (0, 0, 0)
@@ -27,6 +28,7 @@ pg.display.set_caption("Greebles Tales!")
 sprites = pg.sprite.Group()
 blocks = pg.sprite.Group()
 players = pg.sprite.Group()
+enemies = pg.sprite.Group()
 
 tank = Tank()
 tank.rect.x = 33
@@ -34,13 +36,33 @@ tank.rect.y = 33
 
 players.add(tank)
 
-#sprites = level.make_spiral(int(screen_width/32-2), int(screen_height/32-2), sprites)
-sprites = level.make_maze(int(screen_width/32-2), int(screen_height/32-2), sprites)
+fly = Fly()
+fly.rect.x = 32*10+1
+fly.rect.y = 32*10+1
+
+enemies.add(fly)
+
+sprites = level.make_spiral(int(screen_width/32-2), int(screen_height/32-2), sprites)
+#sprites = level.make_maze(int(screen_width/32-2), int(screen_height/32-2), sprites)
 
 for sprite in sprites:
     blocks.add(sprite)
 
+# clean for players
+for player in players:
+    hits = pg.sprite.spritecollide(player, blocks, False)
+    for hit in hits:
+        hit.fade()
+
+# clean for enemies
+for ennemy in enemies:
+    hits = pg.sprite.spritecollide(ennemy, blocks, False)
+    for hit in hits:
+        hit.fade()
+
+
 sprites.add(tank)
+sprites.add(fly)
 # draw border
 for i in range(0, screen_width, 32):
     for n in range(0, screen_height, screen_height-32):
@@ -66,6 +88,19 @@ x_speed = y_speed = 0
 slowclock = 0
 
 
+def is_path_clear(angle, entity):
+    if angle is None:
+        return True  # no angle, no path
+    tank.apply_move(angle, 5)
+    hits = pg.sprite.spritecollide(tank, blocks, False)
+    result = True
+    for hit in hits:
+        if blocks.has(hit):
+            result = False
+    tank.apply_move(angle, -5)
+    return result
+
+
 while not done:
     keys = pg.key.get_pressed()
     for event in pg.event.get():
@@ -73,17 +108,13 @@ while not done:
             done = True
         if event.type is pg.KEYDOWN:
             if event.key == pg.K_LEFT:
-                tank.set_speed(x_speed=-2)
-                tank.rotate(90)
+                tank.input.append(90)
             elif event.key == pg.K_RIGHT:
-                tank.set_speed(x_speed=2)
-                tank.rotate(270)
+                tank.input.append(270)
             elif event.key == pg.K_UP:
-                tank.set_speed(y_speed=-2)
-                tank.rotate(0)
+                tank.input.append(0)
             elif event.key == pg.K_DOWN:
-                tank.rotate(180)
-                tank.set_speed(y_speed=2)
+                tank.input.append(180)
             elif event.key == pg.K_SPACE:
                 # pushing the tank hitbox 5 pixel further for colision check
                 tank.apply_move(tank.old_angle, 5)
@@ -93,58 +124,52 @@ while not done:
                     # first compare the hitbox
                     hits[0].journey = 0
                     hits[0].align()
-                    speed = hits[0].x_speed + hits[0].y_speed
+                    block_power = 2
                     hits[0].x_speed, hits[0].y_speed =\
-                        Entity.get_move(tank.old_angle, 4+speed)
+                        Entity.get_move(tank.old_angle, 4+block_power)
                 tank.apply_move(tank.old_angle, -5)
         elif event.type == pg.KEYUP:
-            if event.key == pg.K_LEFT or event.key == pg.K_RIGHT:
-                tank.set_speed(0, tank.y_speed)
-            elif event.key == pg.K_UP or event.key == pg.K_DOWN:
-                tank.set_speed(tank.x_speed, 0)
-
-    if tank.y_speed is 2 and abs(tank.x_speed) is 0:
-        tank.rotate(180)
-    if tank.y_speed is -2 and abs(tank.x_speed) is 0:
-        tank.rotate(0)
-    if tank.x_speed is 2 and abs(tank.y_speed) is 0:
-        tank.rotate(270)
-    if tank.x_speed is -2 and abs(tank.y_speed) is 0:
-        tank.rotate(90)
+            if event.key == pg.K_LEFT:
+                tank.input.remove(90)
+            if event.key == pg.K_RIGHT:
+                tank.input.remove(270)
+            if event.key == pg.K_UP:
+                tank.input.remove(0)
+            if event.key == pg.K_DOWN:
+                tank.input.remove(180)
 
     screen.fill(NOIR)
+    tank.unblocked()
     for block in sprites:
+        if players.has(block):
+            print(block.get_angle())
+            if not is_path_clear(block.get_angle(), block):
+                block.blocked()
+                while not is_path_clear(block.get_angle(), block):
+                    block.blocked()
         if block.update():
             block.remove(sprites)
             hits = pg.sprite.spritecollide(block, sprites, False)
             for hit in hits:
-                if players.has(block):
+                if enemies.has(block):
+                    print("enemy")
+                    if block.forced:
+                        block.kill()
+                    continue
+                elif players.has(block):
                     if block.forced:
                         if settings.level > 1:
                             block.kill()
                         print("dead")
                         block.align()
                         block.forced = False
-                        block.set_speed(0, 0)
-                        block.rotate(0)
-                    else:
-                        print("frame")
-                        for angle in range(0, 360, 90):
-                            tank.apply_move(angle, 2)
-                            angle_hits = pg.sprite.spritecollide(tank, pg.sprite.GroupSingle(hit), False,pg.sprite.collide_rect_ratio(0.9))
-                            if len(angle_hits) > 0:
-                                print(angle)
-                                if angle == 0 or angle == 180:
-                                    tank.rect.y -= tank.y_speed
-                                else:
-                                    tank.rect.x -= tank.x_speed
-                                tank.apply_move(angle, -2)
-                                break
-                            tank.apply_move(angle, -2)
-
+                        block.set_speed((0, 0))
                 else:
                     if block.journey is 1:
                         block.fade()
+                    elif enemies.has(hit):
+                        block.pushing_entity = True
+                        hit.force_move(block.x_speed, block.y_speed)
                     elif players.has(hit):
                         # Block is pushing against a player!
                         if not settings.tank_squashable:

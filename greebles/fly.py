@@ -7,14 +7,14 @@ Will handle movement, score, lifes and powerup
 """
 
 import pygame
-from greebles.ennemy import Ennemy
+from greebles.enemy import Enemy
 
 BLACK = (0, 0, 0, 0)
 
 
-class Fly(Ennemy):
+class Fly(Enemy):
     """
-    This class represents a ennemy, a moving entity controlled by the user.
+    This class represents a enemy, a moving entity controlled by the user.
 
     inherit from entity
     """
@@ -25,6 +25,6 @@ class Fly(Ennemy):
 
         build an image with a ennemy
         """
-        self.image = pygame.image.load("fly.png")
+        self.image = pygame.image.load("assets/fly.png")
         self.image.set_colorkey(BLACK)
         super().__init__()

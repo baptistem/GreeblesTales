@@ -28,17 +28,27 @@ class Entity(pygame.sprite.Sprite):
         self.y_speed = 0
         self.forced = False
         self.journey = 9999
-        self.old_angle = 0
+        self.old_angle = None
         self.pushing_entity = False
 
     def rotate(self, angle):
-        if self.forced:
+        if self.forced or self.old_angle is None:
             return
-        self.image = pygame.transform.rotate(self.image, 360 - self.old_angle)
+        self.image = pygame.transform.rotate(self.image,- self.old_angle)
         self.old_angle = angle
         self.image = pygame.transform.rotate(self.image, angle)
 
-    def set_speed(self, x_speed=None, y_speed=None):
+    def update_speed(self, speed):
+        x_speed = speed[0]
+        y_speed = speed[1]
+        if x_speed is not None:
+            self.x_speed += x_speed
+        if y_speed is not None:
+            self.y_speed += y_speed
+
+    def set_speed(self, speed):
+        x_speed = speed[0]
+        y_speed = speed[1]
         if x_speed is None:
             x_speed = self.x_speed
         if y_speed is None:
@@ -50,10 +60,14 @@ class Entity(pygame.sprite.Sprite):
     def update(self):
         if self.forced:
             self.image = pygame.transform.rotate(self.image, 90)
-            self.old_angle += 90
+            if self.old_angle is not None:
+                self.old_angle += 90
             self.journey += 1
-        self.rect.x += self.x_speed
-        self.rect.y += self.y_speed
+            return True
+        if self.old_angle is None or self.old_angle in [90,270]:
+            self.rect.x += self.x_speed
+        if self.old_angle is None or self.old_angle in [0,180]:
+            self.rect.y += self.y_speed
         return True
 
     def force_move(self, x_speed, y_speed):
