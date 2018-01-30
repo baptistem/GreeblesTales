@@ -18,6 +18,9 @@ see https://www.gnu.org/licenses/gpl-3.0.txt for licence
 - block moves
 - destroyable blocks
 - player death
+- smoother movement
+- level difficulty
+- Enemy
 
 # Things not working #
-- smooth tank movement
+- corner smoother movement
