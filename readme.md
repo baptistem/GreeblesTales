@@ -21,6 +21,8 @@ see https://www.gnu.org/licenses/gpl-3.0.txt for licence
 - smoother movement
 - level difficulty
 - Enemy
+- Enemy IA
 
 # Things not working #
 - corner smoother movement
+- enemy death

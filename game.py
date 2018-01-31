@@ -42,7 +42,8 @@ fly.rect.y = 32*10+1
 
 enemies.add(fly)
 
-sprites = level.make_spiral(int(screen_width/32-2), int(screen_height/32-2), sprites)
+sprites = level.make_line(int(screen_width/32-2),int(screen_height/32-2),sprites)
+#sprites = level.make_spiral(int(screen_width/32-2), int(screen_height/32-2), sprites)
 #sprites = level.make_maze(int(screen_width/32-2), int(screen_height/32-2), sprites)
 
 for sprite in sprites:
@@ -91,13 +92,13 @@ slowclock = 0
 def is_path_clear(angle, entity):
     if angle is None:
         return True  # no angle, no path
-    tank.apply_move(angle, 5)
-    hits = pg.sprite.spritecollide(tank, blocks, False)
+    entity.apply_move(angle, 5)
+    hits = pg.sprite.spritecollide(entity, blocks, False)
     result = True
     for hit in hits:
         if blocks.has(hit):
             result = False
-    tank.apply_move(angle, -5)
+    entity.apply_move(angle, -5)
     return result
 
 
@@ -139,20 +140,29 @@ while not done:
                 tank.input.remove(180)
 
     screen.fill(NOIR)
-    tank.unblocked()
+    for player in players:
+        player.unblocked()
+    for enemy in enemies:
+        enemy.available_path=[]
+
     for block in sprites:
         if players.has(block):
-            print(block.get_angle())
             if not is_path_clear(block.get_angle(), block):
                 block.blocked()
                 while not is_path_clear(block.get_angle(), block):
                     block.blocked()
+        if enemies.has(block):
+            available_path = []
+            for angle in range(0,360,90):
+                if is_path_clear(angle,block):
+                    print(angle)
+                    available_path.append(angle)
+            block.available_path = available_path
         if block.update():
             block.remove(sprites)
             hits = pg.sprite.spritecollide(block, sprites, False)
             for hit in hits:
                 if enemies.has(block):
-                    print("enemy")
                     if block.forced:
                         block.kill()
                     continue
@@ -168,11 +178,16 @@ while not done:
                     if block.journey is 1:
                         block.fade()
                     elif enemies.has(hit):
+                        if block.journey == 10000:
+                            block.fade()
+                            continue
+                        block.align()
                         block.pushing_entity = True
                         hit.force_move(block.x_speed, block.y_speed)
                     elif players.has(hit):
                         # Block is pushing against a player!
                         if not settings.tank_squashable:
+                            block.align()
                             block.bounce()
                         elif not hit.forced:
                             block.pushing_entity = True

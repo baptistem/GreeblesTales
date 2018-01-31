@@ -37,7 +37,6 @@ class Tank(Entity):
         self.index -= 1
 
     def unblocked(self):
-        print("unblocked!")
         self.index = -1
 
     def update(self):
