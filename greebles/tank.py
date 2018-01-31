@@ -45,17 +45,16 @@ class Tank(Entity):
         if abs(self.index) > len(self.input):
             self.rotate(self.input[-1])
             return False
-        print("updaaaate")
-        self.rotate(self.input[self.index])
-        if self.old_angle == 0:
-            self.y_speed = -2
-        if self.old_angle == 180:
-            self.y_speed = 2
-        if self.old_angle == 90:
-            self.x_speed = -2
-        if self.old_angle == 270:
-            self.x_speed = 2
-
+        if not self.forced:
+            self.rotate(self.input[self.index])
+            if self.old_angle == 0:
+                self.y_speed = -2
+            if self.old_angle == 180:
+                self.y_speed = 2
+            if self.old_angle == 90:
+                self.x_speed = -2
+            if self.old_angle == 270:
+                self.x_speed = 2
         return super().update()
 
     def get_angle(self):

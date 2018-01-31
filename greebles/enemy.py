@@ -31,23 +31,24 @@ class Enemy(Entity):
 
     def pick_direction(self):
         if self.old_angle in self.available_path:
-            if randrange(0,10) > 1:
+            if randrange(0,20) > 1:
                 return self.old_angle
         shuffle(self.available_path)
         return self.available_path[0]
 
     def update(self):
-        if len(self.available_path) == 0:
+        if not self.forced and len(self.available_path) == 0:
             self.rotate(self.old_angle+90)
             return False
-        self.rotate(self.pick_direction())
-        if self.old_angle == 0:
-            self.y_speed = -2
-        if self.old_angle == 180:
-            self.y_speed = 2
-        if self.old_angle == 90:
-            self.x_speed = -2
-        if self.old_angle == 270:
-            self.x_speed = 2
+        if not self.forced:
+            self.rotate(self.pick_direction())
+            if self.old_angle == 0:
+                self.y_speed = -2
+            if self.old_angle == 180:
+                self.y_speed = 2
+            if self.old_angle == 90:
+                self.x_speed = -2
+            if self.old_angle == 270:
+                self.x_speed = 2
 
         return super().update()

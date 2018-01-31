@@ -63,6 +63,8 @@ class Entity(pygame.sprite.Sprite):
             if self.old_angle is not None:
                 self.old_angle += 90
             self.journey += 1
+            self.rect.x += self.x_speed
+            self.rect.y += self.y_speed
             return True
         if self.old_angle is None or self.old_angle in [90,270]:
             self.rect.x += self.x_speed

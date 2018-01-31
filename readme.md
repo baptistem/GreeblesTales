@@ -22,7 +22,8 @@ see https://www.gnu.org/licenses/gpl-3.0.txt for licence
 - level difficulty
 - Enemy
 - Enemy IA
+- Enemy death
 
 # Things not working #
 - corner smoother movement
-- enemy death
+- block bounce after enemy death
