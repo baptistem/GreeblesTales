@@ -155,7 +155,6 @@ while not done:
             available_path = []
             for angle in range(0,360,90):
                 if is_path_clear(angle,block):
-                    print(angle)
                     available_path.append(angle)
             block.available_path = available_path
         if block.update():
@@ -170,20 +169,21 @@ while not done:
                     if block.forced:
                         if settings.level > 1:
                             block.kill()
-                        print("dead")
-                        block.align()
-                        block.forced = False
-                        block.set_speed((0, 0))
+                        else:
+                            print("dead")
+                            block.align()
+                            block.forced = False
+                            block.set_speed((0, 0))
                 else:
-                    if block.journey is 1:
-                        block.fade()
-                    elif enemies.has(hit):
+                    if enemies.has(hit):
                         if block.journey == 10000:
                             block.fade()
                             continue
                         block.align()
                         block.pushing_entity = True
                         hit.force_move(block.x_speed, block.y_speed)
+                    elif block.journey is 1:
+                            block.fade()
                     elif players.has(hit):
                         # Block is pushing against a player!
                         if not settings.tank_squashable:
